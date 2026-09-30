@@ -1,0 +1,83 @@
+{
+    "frecuencias": {
+        "ACC": 32,
+        "EDA": 4,
+        "TEMP": 4,
+        "HR": 1,
+        "pkl": 700
+    },
+    "mapa_sujetos": {
+        "S2": {
+            "e4_dir": "../data/raw/WESAD/S2/S2_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S2/S2.pkl"
+        },
+        "S3": {
+            "e4_dir": "../data/raw/WESAD/S3/S3_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S3/S3.pkl"
+        },
+        "S4": {
+            "e4_dir": "../data/raw/WESAD/S4/S4_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S4/S4.pkl"
+        },
+        "S5": {
+            "e4_dir": "../data/raw/WESAD/S5/S5_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S5/S5.pkl"
+        },
+        "S6": {
+            "e4_dir": "../data/raw/WESAD/S6/S6_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S6/S6.pkl"
+        },
+        "S7": {
+            "e4_dir": "../data/raw/WESAD/S7/S7_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S7/S7.pkl"
+        },
+        "S8": {
+            "e4_dir": "../data/raw/WESAD/S8/S8_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S8/S8.pkl"
+        },
+        "S9": {
+            "e4_dir": "../data/raw/WESAD/S9/S9_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S9/S9.pkl"
+        },
+        "S10": {
+            "e4_dir": "../data/raw/WESAD/S10/S10_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S10/S10.pkl"
+        },
+        "S11": {
+            "e4_dir": "../data/raw/WESAD/S11/S11_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S11/S11.pkl"
+        },        
+        "S13": {
+            "e4_dir": "../data/raw/WESAD/S13/S13_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S13/S13.pkl"
+        },
+        "S14": {
+            "e4_dir": "../data/raw/WESAD/S14/S14_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S14/S14.pkl"
+        },
+        "S15": {
+            "e4_dir": "../data/raw/WESAD/S15/S15_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S15/S15.pkl"
+        },
+        "S16": {
+            "e4_dir": "../data/raw/WESAD/S16/S16_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S16/S16.pkl"
+        },
+        "S17": {
+            "e4_dir": "../data/raw/WESAD/S17/S17_E4_Data",
+            "pkl_file": "../data/raw/WESAD/S17/S17.pkl"
+        }
+    },
+    "rutas_procesamiento": {
+        "ruta_salida_parquet_1Hz": "../data/processed/WESAD_dataset_maestro_1Hz.parquet",
+        "ruta_salida_csv_1Hz": "../data/processed/WESAD_dataset_maestro_1Hz.csv",
+        "ruta_salida_parquet_1min": "../data/processed/WESAD_dataset_maestro_1min.parquet",
+        "ruta_salida_csv_1min": "../data/processed/WESAD_dataset_maestro_1min.csv"
+    },
+    "rutas_artefactos_stressload": {
+        "carpeta": "../models/stressload_camino_B",
+        "modelo_final": "../models/stressload_camino_B/modelo_stress_camino_B_final.pkl",
+        "df_loso": "../models/stressload_camino_B/df_loso_wesad.parquet",
+        "columnas_camino_B": "../models/stressload_camino_B/columnas_camino_B.json"
+    }
+}

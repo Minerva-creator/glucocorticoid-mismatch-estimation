@@ -1,0 +1,49 @@
+# Entorno virtual y caché de Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Editor y sistema
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Versiones anteriores de notebooks
+notebooks/OLD/
+notebooks20260831/
+notebooks/Instalaciones.ipynb
+
+# Patrones genéricos de datos brutos (van ANTES de las excepciones,
+# para que las excepciones concretas de más abajo tengan prioridad)
+*.zip
+*.tar
+*.tar.gz
+*.csv
+
+# Datos brutos y de terceros: todo ignorado por defecto,
+# con excepciones explícitas para lo que sí se publica
+data/raw/*
+!data/raw/20260813/
+data/raw/20260813/*
+!data/raw/20260813/mifitness_fitness_data_20260814.csv
+!data/raw/20260813/mifitness_sport_record_20260814.csv
+!data/raw/Formulario EMA/
+data/raw/Formulario EMA/*
+!data/raw/Formulario EMA/Tomas_hidrocortisona_20260830.xlsx
+
+# Datos procesados: solo se publican los dos parquets finales
+data/processed/*
+!data/processed/MVA_n_of_1_extended.parquet
+!data/processed/MVA_n_of_1_risk_extended.parquet
+
+# Modelos: se ignora todo salvo lo listado
+models/*
+!models/n_of_1_extended/
+models/n_of_1_extended/*
+!models/n_of_1_extended/baseline_crhr_mcmc_extended.parquet
+!models/stressload_camino_B/
+models/stressload_camino_B/*
+!models/stressload_camino_B/columnas_camino_B.json
+!models/stressload_camino_B/modelo_stress_camino_B_final.pkl

@@ -1,0 +1,17 @@
+{"rutas":{
+    "general": {
+        "raw_data_dir": "../data/raw/20260617",
+        "raw_data_dir_extended": "../data/raw/20260813",
+        "formulario": "../data/raw/Formulario EMA/Tomas_hidrocortisona_20260830.xlsx",
+        "mifitness_fitness_data": "../data/raw/20260813/mifitness_fitness_data_20260814.csv",
+        "mifitness_sport_record": "../data/raw/20260813/mifitness_sport_record_20260814.csv",
+        "processed_data": "../data/processed/MVA_n_of_1.parquet",
+        "processed_data_extended": "../data/processed/MVA_n_of_1_extended.parquet",
+        "processed_data_risk": "../data/processed/MVA_n_of_1_risk.parquet",
+        "processed_data_risk_extended": "../data/processed/MVA_n_of_1_risk_extended.parquet",
+        "artefactos_baseline": "../models/n_of_1_baseline",
+        "artefactos_extended": "../models/n_of_1_extended"
+    }
+}
+
+}
