@@ -1,8 +1,9 @@
 """
-Utilidades compartidas para parsear el formulario de registro de tomas
-de hidrocortisona ("Tomas hidrocortisona.xlsx"). Usado por
-Coverage(t).ipynb y n_of_1_preprocesamiento.ipynb
-(ventanas de exclusión de dosis para sigma_global).
+Utilidades compartidas del proyecto: parseo del formulario de registro de tomas de
+hidrocortisona ("Tomas_hidrocortisona_20260830.xlsx"), modelo farmacocinético de Coverage(t),
+Demand_circadian(t) y variantes de pauta de dosificación. Usado por
+04_Coverage.ipynb, 03_Demand.ipynb, 05_Escenarios_sinteticos.ipynb,
+06_n_of_1_preprocesamiento.ipynb y 07_n_of_1_calculo_validacion.ipynb.
 """
 
 from pathlib import Path
@@ -133,10 +134,41 @@ def detect_dose_gaps(doses: pd.DataFrame, slots: pd.DataFrame, mg_tolerance: flo
 
 def load_form_doses(xlsx_path, sheet_name: str = FORM_SHEET, k_slots: int = 3, mg_tolerance: float = 2.0,
                      confirmed_omission_dates: set = None) -> pd.DataFrame:
-    """[...]. Si se omite (None), se cargan automáticamente desde
-    confirmed_omissions.json (mismo directorio que este módulo) -- fuente
-    única compartida por todos los notebooks. Pasa un set explícito solo
-    para pruebas puntuales o para sobreescribir el archivo."""
+    """Carga el registro real de tomas de hidrocortisona desde el Excel del
+    formulario y detecta inconsistencias respecto a la pauta habitual.
+
+    Lee la hoja `sheet_name`, conserva las filas con dosis positiva y
+    construye el instante de cada toma a partir de la marca temporal del
+    formulario, sustituyendo la fecha o la hora si la autora las corrigió
+    manualmente ("Actualizar la fecha?" / "Actualizar la hora?"). Una toma
+    se marca como adicional (`is_extra=True`) si el formulario la declara
+    "Doble" (p. ej. una dosis de refuerzo).
+
+    Args:
+        xlsx_path: ruta al Excel exportado del formulario (no se redistribuye).
+        sheet_name: hoja con las respuestas.
+        k_slots: número de franjas horarias esperadas por día (3 en la pauta
+            10-5-5), derivadas de las tomas normales con `fit_dose_slots`.
+        mg_tolerance: desviación máxima en mg respecto al valor típico de la
+            franja antes de señalar una toma como anómala.
+        confirmed_omission_dates: conjunto de fechas (`datetime.date`) con
+            omisión o reordenamiento de dosis confirmado por la autora. Si se
+            omite (None), se cargan automáticamente desde
+            `confirmed_omissions.json` (mismo directorio que este módulo), fuente
+            única compartida por todos los notebooks. Pasa un set explícito solo
+            para pruebas puntuales o para sobrescribir el archivo.
+
+    Returns:
+        DataFrame ordenado por fecha con las columnas `datetime`, `dose_mg`,
+        `is_extra` y `source` (siempre "scheduled_actual"). En `.attrs`
+        incluye `dose_slots` (franjas derivadas), `pending_gaps` (franjas sin
+        toma o con mg atípico, sin confirmar) y `confirmed_gaps` (las mismas,
+        en fechas confirmadas por la autora).
+
+    No se añade ni se modifica ninguna toma: Coverage(t) se calcula solo con
+    los eventos presentes en el registro, y las inconsistencias pendientes
+    solo se avisan por pantalla.
+    """
     if confirmed_omission_dates is None:
         confirmed_omission_dates = _load_confirmed_omissions()
     df = pd.read_excel(xlsx_path, sheet_name=sheet_name)
@@ -161,14 +193,14 @@ def load_form_doses(xlsx_path, sheet_name: str = FORM_SHEET, k_slots: int = 3, m
 
     if len(pending) > 0:
         print(f"AVISO: {pending['date'].nunique()} día(s) con inconsistencias pendientes de reconciliación manual.")
-        print("Ver doses.attrs['pending_gaps']. Coverage(t) se calculará solo con los eventos ya presentes (Opción B).")
+        print("Ver doses.attrs['pending_gaps']. Coverage(t) se calculará solo con los eventos ya presentes.")
     if len(confirmed) > 0:
         print(f"INFO: {confirmed['date'].nunique()} día(s) con omisión/reordenamiento confirmado por la autora (doses.attrs['confirmed_gaps']), sin cobertura añadida.")
 
     return out
 # ======================================================================================================
 # EXtracción del "groundtruth" del formulario de dosis
-# Usado por MVA_preprocesamiento.ipynb
+# Usado por 07_n_of_1_calculo_validacion.ipynb
 # ======================================================================================================
 
 import pandas as pd
@@ -298,7 +330,7 @@ def load_form_ema(xlsx_path, doses: pd.DataFrame, sheet_name: str = FORM_SHEET) 
 
 # ======================================================================================================
 # NÚCLEO PK COMPARTIDO — Coverage(t), modelo de Bateman
-# Movido desde coverage_model_v1_3.ipynb para reutilizarlo en otros notebooks (p. ej. escenarios sintéticos)
+# Procede de 04_Coverage.ipynb para reutilizarlo en otros notebooks (p. ej. escenarios sintéticos)
 # ======================================================================================================
 
 def _tmax_of_ka(ka: float, ke: float) -> float:
@@ -333,7 +365,7 @@ _KA_DEFAULT = _solve_ka_from_tmax(_KE_DEFAULT, tmax_target=1.25)
 
 @dataclass
 class PKParams:
-    ka: float = _KA_DEFAULT   # h^-1, constante de absorción — derivada, ver Coverage_t_.ipynb
+    ka: float = _KA_DEFAULT   # h^-1, constante de absorción — derivada, ver 04_Coverage.ipynb 
     ke: float = _KE_DEFAULT   # h^-1, constante de eliminación — derivada de t1/2=1.7h
 
     @property
@@ -342,9 +374,10 @@ class PKParams:
 
 
 def bateman_single_dose(t_rel: np.ndarray, dose_mg: float, pk: PKParams) -> np.ndarray:
-    """Contribución de una única toma a Coverage(t), evaluada en tiempos
-    relativos a la hora de la toma (t_rel en horas, puede incluir negativos:
-    se fuerza a 0 antes de t=0)."""
+    """Cantidad de fármaco en el organismo X(t), en mg, tras una única toma de dose_mg
+    (modelo de Bateman), evaluada en tiempos relativos a la hora de la toma (t_rel en horas,
+    puede incluir negativos: se fuerza a 0 antes de t=0). No es la tasa Coverage(t):
+    esta se obtiene en compute_coverage() como ke · X(t)."""
     t_rel = np.asarray(t_rel, dtype=float)
     out = np.zeros_like(t_rel)
     mask = t_rel >= 0
@@ -364,16 +397,21 @@ def compute_coverage(
     pk: PKParams = PKParams(),
     normalize: bool = False,
 ) -> pd.Series:
-    """Superposición lineal de todas las tomas sobre una rejilla temporal.
-    Ver docstring original en Coverage_t_.ipynb para el detalle completo
-    de unidades y supuestos (mg-equivalente/h, no concentración; linealidad sin
-    saturación de CBG)."""
+    """Coverage(t) como tasa de eliminación aparente, en mg/h: superposición lineal de las
+       tomas sobre una rejilla temporal. Coverage(t) = ke · X(t), con X(t) la cantidad de fármaco
+       en el organismo (ver bateman_single_dose). No es una concentración plasmática real; supone
+       F = 1, linealidad sin saturación de CBG y convención de estado estacionario.
+       normalize=True es SOLO para visualización: nunca para calcular Risk(t)."""
+    
     t_hours = (time_grid.values - time_grid.values[0]) / np.timedelta64(1, "h")
     coverage = np.zeros_like(t_hours, dtype=float)
 
     for _, ev in dose_events.iterrows():
         t_dose_h = (ev["datetime"] - time_grid[0]) / pd.Timedelta(hours=1)
         coverage += bateman_single_dose(t_hours - t_dose_h, ev["dose_mg"], pk)
+
+    coverage = coverage * pk.ke  # tasa de eliminación aparente, mg/h
+    
 
     series = pd.Series(coverage, index=time_grid, name="coverage_mg_per_h")
 
@@ -407,7 +445,7 @@ def build_standard_schedule(
 
 # ======================================================================================================
 # NÚCLEO DEMAND_CIRCADIAN(T) — Dual Cosines (Chakraborty, Krzyzanski & Jusko, 1999)
-# Movido desde Demanda_v2.ipynb para reutilizarlo en otros notebooks (p. ej. escenarios sintéticos)
+# Movido desde 02_Demand.ipynb para reutilizarlo en otros notebooks (p. ej. escenarios sintéticos)
 # ======================================================================================================
 
 # Pico y nadir reales reportados por Debono et al. (2009) — fijan Rm y Ramp
@@ -446,9 +484,9 @@ def dual_cosines(t_horas, Rm=RM_DEMAND, Ramp=RAMP_DEMAND, T_min=T_MIN_DEMAND, T_
 
 def demand_circadian(t_horas, daily_total_mg=DAILY_TOTAL_MG_MID,
                       Rm=RM_DEMAND, Ramp=RAMP_DEMAND, T_min=T_MIN_DEMAND, T_max=T_MAX_DEMAND):
-    """Demand_circadian(t) en mg-equivalentes/hora — fase poblacional (Debono et al. 2009),
+    """Demand_circadian(t) en mg/hora — fase poblacional (Debono et al. 2009),
     usada en escenarios sintéticos. Para el caso n-of-1, ver demand_circadian_personalizado()
-    en Demanda_v2.ipynb (desplaza T_min/T_max a la hora de despertar real de la autora)."""
+    en 03_Demand.ipynb (desplaza T_min/T_max a la hora de despertar real de la autora)."""
     forma = dual_cosines(t_horas, Rm, Ramp, T_min, T_max)
     tref = np.linspace(0, 24, 24*60, endpoint=False)
     forma_ref = dual_cosines(tref, Rm, Ramp, T_min, T_max)
@@ -456,14 +494,14 @@ def demand_circadian(t_horas, daily_total_mg=DAILY_TOTAL_MG_MID,
     return forma * (daily_total_mg / integral_forma)
 
 
-D_REF_MID = 0.57  # mg/h — Kirschbaum et al. (1993), ya cerrado (Demanda_v2.ipynb, Sección 2)
+D_REF_MID = 0.57  # mg/h — Kirschbaum et al. (1993), ya cerrado (03_Demand.ipynb, Sección 2)
 
 def demand_circadian_personalizado(t_horas, daily_total_mg, hora_despertar_media,
                                     Rm=None, Ramp=None, T_min=None, T_max=None,
                                     desfase_pico_tras_despertar_h=0.0):
     """Igual que demand_circadian(), pero T_min/T_max se desplazan en bloque para que el pico
     (T_max) caiga en la hora de despertar real (+ desfase opcional, no investigado, 0.0 por defecto).
-    Usado en la validación n-of-1 (ver n_of_1_calculo_validacion.ipynb)."""
+    Usado en la validación n-of-1 (ver 07_n_of_1_calculo_validacion.ipynb)."""
     Rm = RM_DEMAND if Rm is None else Rm
     Ramp = RAMP_DEMAND if Ramp is None else Ramp
     T_min = T_MIN_DEMAND if T_min is None else T_min

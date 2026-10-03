@@ -46,9 +46,11 @@ glucocorticoides. Es una variable latente, no observable directamente: se constr
 combinando un componente circadiano (el patrón natural de cortisol a lo largo del
 día) con StressLoad(t) como señal de demanda adicional ante activación fisiológica.
 
-**Capa 3 — Coverage(t).** Representa la cobertura glucocorticoide estimada, derivada
-de la dosis, el horario de la toma y un modelo farmacocinético simplificado
-(compartimental, de absorción y eliminación de primer orden).
+**Capa 3 — Coverage(t).** Representa la cobertura glucocorticoide estimada, expresada
+como una tasa (mg/hora), derivada de la dosis, el horario de la toma y un
+modelo farmacocinético simplificado (compartimental, de absorción y eliminación de
+primer orden). Se expresa como tasa para que sea dimensionalmente consistente con 
+Demand(t) en la resta que define Risk(t).
 
 **Capa 4 — Risk(t).** Representa la posible desalineación contextual entre demanda y
 cobertura:
@@ -61,7 +63,7 @@ Un valor de Risk(t) por encima de cero indica que la demanda estimada supera a l
 cobertura estimada en ese instante, es decir, una posible situación de
 infra-cobertura.
 
-Risk(t) se expresa como un número con unidades (mg-equivalente/hora), pero esa
+Risk(t) se expresa como un número con unidades (mg/hora), pero esa
 precisión aparente no debe confundirse con exactitud referencial. El valor hereda,
 sin corregirla, la incertidumbre explicitada de sus dos términos: Demand(t) y
 Coverage(t). Además, tiene la incertidumbre añadida de que Demand(t) deja fuera

@@ -47,3 +47,6 @@ models/n_of_1_extended/*
 models/stressload_camino_B/*
 !models/stressload_camino_B/columnas_camino_B.json
 !models/stressload_camino_B/modelo_stress_camino_B_final.pkl
+
+notebooks - copia/
+notebooks - seguridad/
