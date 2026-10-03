@@ -235,11 +235,17 @@ capa de la arquitectura:
 
 ### Reproducibilidad
 
-El preprocesamiento de WESAD (`01_WESAD_preprocesamiento.ipynb`) requiere descargar
-el dataset por separado (ver arriba). El resto del pipeline, desde
-`02_StressLoad.ipynb` hasta `07_n_of_1_calculo_validacion.ipynb`, es ejecutable de
-principio a fin con los datos incluidos en este repositorio.
+Este repositorio no es completamente ejecutable de principio a fin sin descargar
+WESAD por separado (ver arriba). Los notebooks `01_WESAD_preprocesamiento.ipynb`,
+`02_StressLoad.ipynb`, `03_Demand.ipynb` y `05_Escenarios_sinteticos.ipynb` dependen,
+directa o indirectamente, de WESAD o de artefactos derivados de él que no se
+redistribuyen en este repositorio (ver
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).
 
+Los notebooks `04_Coverage.ipynb`, `06_n_of_1_preprocesamiento.ipynb` y
+`07_n_of_1_calculo_validacion.ipynb` sí son ejecutables de principio a fin con los
+datos y el modelo ya entrenado incluidos en este repositorio, sin necesidad de
+descargar WESAD.
 ## Instalación y reproducción
 
 ### Requisitos
@@ -271,10 +277,14 @@ pip install -r requirements-lock.txt
 02_StressLoad.ipynb                    # entrena el modelo de Capa 1; requiere WESAD
 03_Demand.ipynb                        # exploración/validación de Capa 2;
                                         # depende del artefacto generado por 02
-04_Coverage.ipynb                      # exploración/validación de Capa 3
-05_Escenarios_sinteticos.ipynb         # validación con datos sintéticos
-06_n_of_1_preprocesamiento.ipynb       # construye la matriz personal
-07_n_of_1_calculo_validacion.ipynb     # integra todo, calcula Risk(t)
+04_Coverage.ipynb                      # exploración/validación de Capa 3;
+                                        # ejecutable sin WESAD
+05_Escenarios_sinteticos.ipynb         # validación con datos sintéticos;
+                                        # requiere el dataset maestro generado por 01
+06_n_of_1_preprocesamiento.ipynb       # construye la matriz personal;
+                                        # ejecutable sin WESAD
+07_n_of_1_calculo_validacion.ipynb     # integra todo, calcula Risk(t);
+                                        # ejecutable sin WESAD
 ```
 
 Cada notebook lee su configuración de rutas desde `MVA_config_rutas.json` o
